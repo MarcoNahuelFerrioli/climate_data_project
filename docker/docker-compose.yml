@@ -1,0 +1,48 @@
+services:
+  python:
+    container_name: climate_project
+    build:
+      context: ..
+      dockerfile: docker/dockerfile
+    volumes:
+      - ..:/app
+    working_dir: /app
+    ports:
+      - "8888:8888"
+    depends_on:
+      - mongodb
+    networks:
+      - climate_network
+  
+  mongodb:
+    image: mongo:6.0
+    container_name: mongo_container
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
+    volumes:
+      - mongo_data:/data/db
+  mongo-express:
+    image: mongo-express
+    container_name: mongo_express
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      ME_CONFIG_MONGODB_SERVER: mongodb
+    depends_on:
+      - mongodb
+    networks:
+      - climate_network
+
+volumes:
+  mongo_data:
+
+networks:
+  climate_network:
