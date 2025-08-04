@@ -1,0 +1,37 @@
+# Virtual environments
+venv/
+.env
+*.env
+
+# Compiled Python files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Log files
+*.log
+
+# Raw and processed data
+data/raw/
+data/processed/
+
+# System temporary files
+.DS_Store
+Thumbs.db
+
+# IDE configuration
+.vscode/
+.idea/
+
+# Ignore only logs or temp files inside docker/
+docker/*.log
+docker/tmp/
+
+# Spark temporary files
+spark-warehouse/
+metastore_db/
+.derby/

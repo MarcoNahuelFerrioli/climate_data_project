@@ -1,6 +1,13 @@
 # Create image based on Python 3.11.9
 FROM python:3.11.9
 
+# Install Java (To Spark)
+RUN apt-get update && apt-get install -y openjdk-11-jdk
+
+# Enviroment variable JAVA_HOME
+ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+ENV PATH=$JAVA_HOME/bin:$PATH
+
 # Create working directory called 'app'
 WORKDIR /app
 
@@ -12,6 +19,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the entire project into the container
 COPY . .
-
 
 CMD ["tail", "-f", "/dev/null"]
