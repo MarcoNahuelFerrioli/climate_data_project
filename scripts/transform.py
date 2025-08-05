@@ -35,7 +35,7 @@ def change_data_type(df):
         return None
 
     #Change time column data type to timestamp:
-    df = df.withColumn("time", to_timestamp(col("time"), "dd/MM/yyyy HH:mm"))
+    df = df.withColumn("time", to_timestamp(col("time")))
 
     types = {
         "temp": "float",
@@ -155,13 +155,13 @@ def validate_ranges(df):
     logging.info("Validating data ranges")
 
     checks = {
-        "temperature": (-50, 60),
-        "dewPoint": (-50, 60),
-        "relativeHumidity": (0, 100),
-        "precipitation": (0, None),  # solo mayor o igual a 0
-        "snowDepth": (0, None),
-        "windSpeed": (0, None),
-        "pressure": (870, 1085)
+        "temp": (-50, 60),
+        "dewp": (-50, 60),
+        "rhum": (0, 100),
+        "prcp": (0, None),  # solo mayor o igual a 0
+        "snow": (0, None),
+        "wspd": (0, None),
+        "pres": (870, 1085)
     }
 
     #Iterate over each column and validate its values across all rows
@@ -194,3 +194,4 @@ def validate_ranges(df):
             logging.warning(f"Column '{column}' not found in DataFrame")
 
     return df  
+

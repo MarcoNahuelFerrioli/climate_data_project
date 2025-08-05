@@ -1,11 +1,11 @@
 # Create image based on Python 3.11.9
-FROM python:3.11.9
+FROM python:3.11.9-bullseye
 
 # Install Java (To Spark)
-RUN apt-get update && apt-get install -y openjdk-11-jdk
+RUN apt-get update && apt-get install -y openjdk-17-jdk && rm -rf /var/lib/apt/lists/*
 
 # Enviroment variable JAVA_HOME
-ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 ENV PATH=$JAVA_HOME/bin:$PATH
 
 # Create working directory called 'app'

@@ -11,8 +11,11 @@ services:
       - "8888:8888"
     depends_on:
       - mongodb
+      - spark-master
     networks:
       - climate_network
+    env_file:
+      - .env
   
   mongodb:
     image: mongo:6.0
@@ -26,6 +29,8 @@ services:
       MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
     volumes:
       - mongo_data:/data/db
+    networks:
+      - climate_network
 
   mongo-express:
     image: mongo-express
@@ -45,47 +50,61 @@ services:
   spark-master:
     image: bitnami/spark:latest
     container_name: spark_master
+    volumes:
+      - ..:/app
+    env_file:
+      - .env
     environment:
       - SPARK_MODE=master
       - SPARK_SUBMIT_ARGS=--packages ${SPARK_MONGO_CONNECTOR}
+      - SPARK_WORKER_MEMORY=${SPARK_WORKER_MEMORY}
+      - SPARK_WORKER_CORES=${SPARK_WORKER_CORES}
     ports:
       - "7077:7077"  
       - "8080:8080"   
     networks:
       - climate_network
-    mem_limit: 1G
-    cpus: 1.5
+
 
   spark-worker-1:
     image: bitnami/spark:latest
     container_name: spark_worker_1
+    volumes:
+      - ..:/app
+    env_file:
+      - .env
     environment:
       - SPARK_MODE=worker
-      - SPARK_MASTER_URL=spark://spark_master:7077
-      - SPARK_SUBMIT_ARGS=--packages org.mongodb.spark:mongo-spark-connector_2.12:10.2.0
+      - SPARK_MASTER=spark://spark_master:7077
+      - SPARK_SUBMIT_ARGS=--packages ${SPARK_MONGO_CONNECTOR}
+      - SPARK_WORKER_MEMORY=${SPARK_WORKER_MEMORY}
+      - SPARK_WORKER_CORES=${SPARK_WORKER_CORES}
     depends_on:
       - spark-master
     ports:
       - "8082:8081" 
     networks:
       - climate_network
-    mem_limit: 1G
-    cpus: 1.5
 
   spark-worker-2:
     image: bitnami/spark:latest
     container_name: spark_worker_2
+    volumes:
+      - ..:/app
+    env_file:
+      - .env
     environment:
       - SPARK_MODE=worker
-      - SPARK_MASTER_URL=spark://spark_master:7077
+      - SPARK_MASTER=spark://spark_master:7077
+      - SPARK_SUBMIT_ARGS=--packages ${SPARK_MONGO_CONNECTOR}
+      - SPARK_WORKER_MEMORY=${SPARK_WORKER_MEMORY}
+      - SPARK_WORKER_CORES=${SPARK_WORKER_CORES}
     depends_on:
       - spark-master
     ports:
       - "8083:8081" 
     networks:
       - climate_network
-    mem_limit: 1G
-    cpus: 1.5
 
 volumes:
   mongo_data:

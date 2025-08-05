@@ -11,7 +11,9 @@ def extract_weather_data(location: Point, start: datetime, end: datetime, filena
         print("The DataFrame is empty")
         return None
     else:
+        if not os.path.exists(raw_data_dir):
+            os.makedirs(raw_data_dir, exist_ok=True)
         output_path = os.path.join(raw_data_dir, filename)
         df.to_json(output_path, orient="records", lines=True, date_format="iso")
         print(f"File saved at: {output_path}")
-        return df
+        return output_path
