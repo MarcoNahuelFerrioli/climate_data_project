@@ -35,11 +35,10 @@ def change_data_type(df):
         return None
 
     #Change time column data type to timestamp:
-    df = df.withColumn("time", to_timestamp(col("time")))
-
     types = {
+        "time": "string",
         "temp": "float",
-        "dewp": "float",
+        "dwpt": "float",
         "rhum": "integer",
         "prcp": "float",
         "snow": "integer",
@@ -48,7 +47,7 @@ def change_data_type(df):
         "wpgt": "float",
         "pres": "float",
         "tsun": "integer",
-        "coco": "integer"
+        "coco": "string"
     }
 
     for column, dType in types.items():
@@ -57,7 +56,8 @@ def change_data_type(df):
         else:
             logging.warning(f"{column} not found in df")
 
-    logging.info("Data Types changed") 
+    logging.info("Data Types changed")
+    df.printSchema()
     return df
 
 def change_name_column(df):
@@ -68,7 +68,7 @@ def change_name_column(df):
         renames = {
             "time": "timestamp",
             "temp": "temperature",
-            "dewp": "dewPoint",
+            "dwpt": "dewPoint",
             "rhum": "relativeHumidity",
             "prcp": "precipitation",
             "snow": "snowDepth",
@@ -91,33 +91,33 @@ def weather_condition_codes(df):
     if not validate_df(df, "weather_condition_codes"):
         return None
     weather_codes = {
-        1: "clear",
-        2: "fair",
-        3: "cloudy",
-        4: "overcast",
-        5: "fog",
-        6: "freezing fog",
-        7: "light rain",
-        8: "rain",
-        9: "heavy rain",
-        10: "freezing rain",
-        11: "heavy freezing rain",
-        12: "sleet",
-        13: "heavy sleet",
-        14: "light snowfall",
-        15: "snowfall",
-        16: "heavy snowfall",
-        17: "rain shower",
-        18:"heavy rain shower",
-        19: "sleet shower",
-        20: "heavy sleet shower",
-        21: "snow shower",
-        22: "heavy snow shower",
-        23: "lightning",
-        24: "hail",
-        25: "thunderstorm",
-        26: "heavy thunderstorm",
-        27: "storm"
+        "1.0": "clear",
+        "2.0": "fair",
+        "3.0": "cloudy",
+        "4.0": "overcast",
+        "5.0": "fog",
+        "6.0": "freezing fog",
+        "7.0": "light rain",
+        "8.0": "rain",
+        "9.0": "heavy rain",
+        "10.0": "freezing rain",
+        "11.0": "heavy freezing rain",
+        "12.0": "sleet",
+        "13.0": "heavy sleet",
+        "14.0": "light snowfall",
+        "15.0": "snowfall",
+        "16.0": "heavy snowfall",
+        "17.0": "rain shower",
+        "18.0":"heavy rain shower",
+        "19.0": "sleet shower",
+        "20.0": "heavy sleet shower",
+        "21.0": "snow shower",
+        "22.0": "heavy snow shower",
+        "23.0": "lightning",
+        "24.0": "hail",
+        "25.0": "thunderstorm",
+        "26.0": "heavy thunderstorm",
+        "27.0": "storm"
     }
 
     df = df.replace(weather_codes, subset=["coco"])
@@ -156,7 +156,7 @@ def validate_ranges(df):
 
     checks = {
         "temp": (-50, 60),
-        "dewp": (-50, 60),
+        "dwpt": (-50, 60),
         "rhum": (0, 100),
         "prcp": (0, None),  # solo mayor o igual a 0
         "snow": (0, None),
