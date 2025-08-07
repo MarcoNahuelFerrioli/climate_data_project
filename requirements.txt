@@ -2,3 +2,4 @@ pandas
 meteostat
 pyspark
 python-dotenv
+pymongo

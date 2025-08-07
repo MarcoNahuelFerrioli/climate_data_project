@@ -1,6 +1,7 @@
 #import libraries
 import os
 from pyspark.sql import SparkSession
+from pymongo import MongoClient
 import logging
 import pandas as pd
 import json
@@ -8,9 +9,9 @@ from meteostat import Point, Hourly
 from datetime import datetime, timedelta
 from extract import extract_weather_data
 from load import load_df_into_mongodb
-from transform import ( 
-    change_data_type,
+from transform import (
     create_dataframe, 
+    change_data_type, 
     change_name_column, 
     weather_condition_codes, 
     add_climate_station, 
@@ -19,39 +20,44 @@ from transform import (
     )
 from dotenv import load_dotenv
 
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
 # Load environment variables
 dotenv_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docker", ".env")
 
 load_dotenv(dotenv_path)
 
-# Create path to save raw data
+# Create path to save JSON into raw data
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-RAW_DATA_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", "data", "raw"))
+RAW_DATA_DIR = os.path.join(BASE_DIR, "..", "data", "raw")
 
 # Coordinates for Copenhague
 location = Point(55.6759, 12.5655)
 city = "Copenhague"
 
-# Date range: current month
-end_month = datetime.now()
-start_month = end_month.replace(day=1)
-filename_month = f"weather_{start_month.date()}_{end_month.date()}.json"
 
-# Date range: Last 24 hours
+# Date range: Houly
 end = datetime.now()
 start = end - timedelta(days=1)
 filename = f"weather_{start.date()}_{end.date()}.json"
+folder_name = f"weather_{start.date()}_{end.date()}_processed"
+
 
 if __name__ == "__main__":
     
     spark_master_url = os.getenv("SPARK_MASTER", "spark://spark_master:7077")
 
     #Build SparkSession
-    spark = SparkSession.builder.appName("climate_project").master(spark_master_url).config("spark.jars.packages", os.getenv("SPARK_MONGO_CONNECTOR")).getOrCreate()
+    spark = SparkSession.builder.appName("climate_project").master(spark_master_url).getOrCreate()
+    #Create MongoDB conection
+    mongo_uri = os.getenv("MONGO_URI", "mongodb://admin:admin@mongodb:27017/")
+    
+    client = MongoClient(mongo_uri)
+    db = client["climate_db"]
+    collection = db["weather_data"]
 
     #Extract data from meteostat
     output_path = extract_weather_data(location, start, end, filename, RAW_DATA_DIR)
-    print(output_path)
 
     #Create df of Spark
     df = create_dataframe(spark, output_path)
@@ -75,8 +81,8 @@ if __name__ == "__main__":
     #Change name column
     df = change_name_column(df)
 
-    #Load df into MongoDB data
-    load_df_into_mongodb(df)
+    #Load JSON into MongoDB data
+    load_df_into_mongodb(df, collection)
 
     #Stop SparkSession
     spark.stop()
